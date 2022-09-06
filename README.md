@@ -1,17 +1,41 @@
-[xgboost documentation](https://xgboost.readthedocs.io/en/stable/index.html)
+# Arvato Capstone Project - Customer Segmentation and Prediction
 
-[GitHub repo](https://github.com/hyperopt/hyperopt)
+### Table of Contents
 
-[kaggle: xgboost-with-hyperopt-tuning](https://www.kaggle.com/code/henrylidgley/xgboost-with-hyperopt-tuning)
+1. [Installation](#installation)
+2. [Introduction](#introduction)
+3. [Project Motivation](#motivation)
+4. [Files](#files)
+5. [Instructions](#instructions)
+6. [Results](#results)
+7. [Licensing, Authors, and Acknowledgements](#licensing)
 
-[HyperParameter Tuning — Hyperopt Bayesian Optimization for (Xgboost and Neural network)
-](https://medium.com/analytics-vidhya/hyperparameter-tuning-hyperopt-bayesian-optimization-for-xgboost-and-neural-network-8aedf278a1c9)
+## Installation <a name="installation"></a>
+Besides the libraries included in the Anaconda distribution for Python 3.6 the following libraries have been included in this project:
+* `kneed` -  Knee-point detection in Python.
+* `imblearn` - library to resample data, either under or over sampling.
+* `XGBoost` - optimized distributed gradient boosting library designed to be highly efficient, flexible and portable.
+* `skopt` - simple and efficient library to minimize (very) expensive and noisy black-box functions.
 
-[An Example of Hyperparameter Optimization on XGBoost, LightGBM and CatBoost using Hyperopt
-](https://towardsdatascience.com/an-example-of-hyperparameter-optimization-on-xgboost-lightgbm-and-catboost-using-hyperopt-12bc41a271e)
+## Introduction <a name="introduction"></a>
+This project has 2 major parts and 1 minor at the end:
+1. Customer Segmentation Report (Unsupervised Learning) - EDA, PCA and clustering analysis of the general and customer population with the goal of being able to describe the core customer base of the company.
+2. Predict Customer Report (Supervised Learning) - Use what was observed in part 1 or parts of it to create a supervised learning model that could predict whether an individual would respond to a mail campaign.
+3. Kaggle Competition - As a last step the predictions generated from the best performing model from part 2 could be submitted to Kaggle and compared against the other student submissions.
 
-[Advanced XGBoost Hyperparameter Tuning](https://bradleyboehmke.github.io/xgboost_databricks_tuning/tutorial_docs/xgboost_hyperopt.html)
+## Project Motivation <a name="motivation"></a>
+This project provided by Arvato Financial Solutions was one of the available capstone projects. I chose this project mainly for two reasons:
+* The data in this project is real and almost no cleaning has been done to it.
+* Last part of the project gives me the opportunity to participate in a Kaggle competition with the other students.
 
-## try https://scikit-optimize.github.io/0.7/modules/generated/skopt.BayesSearchCV.html
+## Files <a name="files"></a>
+Arvato provided a couple of files for this project but as part of the terms and conditions I'm not allowed to share/include them in this repository.
 
-[xgboost hyperparameter tuning](https://github.com/huseyinelci/CustomerSegmentation/blob/master/000_Preprocessing.ipynb)
+## Instructions <a name="instructions"></a>
+As stated above the data for this project is not publicly available. For this reason the notebook and models provided by this repository cannot be used, but are made available to serve as a snapshot of the state of the project at the end.
+
+## Results <a name="results"></a>
+See blog post [here](https://medium.com/@hedejan_27978/customer-segmentation-report-for-arvato-financial-services-443c66d5ab13) 
+
+## Licensing, Authors, Acknowledgements<a name="licensing"></a>
+I would like to thank Arvato Financial Solutions for the datasets/files and Udacity for making this project possible.

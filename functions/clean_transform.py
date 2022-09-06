@@ -419,66 +419,6 @@ def transform_data(df, column_transformer, fit=False):
     return df_trans
 
 
-def transform_columns(df):
-    
-    print('column transformation ...')
-    index = df.index
-    feat_types_dict = classify_features(df)
-    
-    skew_pipeline = Pipeline([
-        ('transform', PowerTransformer()),
-        ('impute', SimpleImputer(missing_values=np.nan, strategy='mean')),
-        ('scale', StandardScaler())
-    ])
-
-    bin_pipeline = Pipeline([
-        ('impute', SimpleImputer(missing_values=np.nan, strategy='most_frequent')),
-    ])    
-
-    cat_pipeline = Pipeline([
-        ('impute', SimpleImputer(missing_values=np.nan, strategy='most_frequent')),
-        ('encode', OneHotEncoder(handle_unknown='ignore'))
-    ])
-
-    ord_pipeline = Pipeline([
-        ('impute', SimpleImputer(missing_values=np.nan, strategy='most_frequent')),
-        ('scale', StandardScaler()),
-    ])
-
-    num_pipeline = Pipeline([
-        ('impute', SimpleImputer(missing_values=np.nan, strategy='mean')),
-        ('scale', StandardScaler()),
-    ])
-    
-    skewed_cols = (df[feat_types_dict['num_cols']].abs().skew() > 1.5)\
-    .where(lambda x:x==True).dropna().index.tolist()
-    num_cols = list(set(feat_types_dict['num_cols']) - set(skewed_cols))
-
-    # build data transformer pipeline
-    transformers = [
-        ('skewed', skew_pipeline, skewed_cols),
-        ('numerical', num_pipeline, num_cols),
-        ('ordinal', ord_pipeline, feat_types_dict['ord_cols']),
-        ('binary', bin_pipeline, feat_types_dict['bin_cols']),
-        ('categorical', cat_pipeline, feat_types_dict['cat_cols']),
-        ('mixed', cat_pipeline, feat_types_dict['mixed_cols']),
-    ]
-
-    # instantiate a transformer
-    column_transformer = ColumnTransformer(transformers = transformers)
-
-    # fit_transformer
-    df_trans = column_transformer.fit_transform(df)
-    # extract dummy column names
-    dummy_cat_cols = list(column_transformer.transformers_[4][1].named_steps['encode'].get_feature_names_out(feat_types_dict['cat_cols']))
-    dummy_mixed_cols = list(column_transformer.transformers_[5][1].named_steps['encode'].get_feature_names_out(feat_types_dict['mixed_cols']))
-
-    col_names = skewed_cols + num_cols + feat_types_dict['ord_cols'] + feat_types_dict['bin_cols'] + dummy_cat_cols + dummy_mixed_cols
-    df_trans = pd.DataFrame(data=column_transformer.fit_transform(df), columns=col_names, index=index)
-    
-    return df_trans
-
-
 def match_features(df, pca_in_features):
 
     df_features, features_to_match = set(df.columns), set(pca_in_features)
