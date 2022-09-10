@@ -1,17 +1,15 @@
 import pickle
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import (
-    StandardScaler, PowerTransformer, 
-    OneHotEncoder, FunctionTransformer,)
-from sklearn.impute import SimpleImputer
-from sklearn.compose import ColumnTransformer
-from tqdm import tqdm
 import warnings
 
-
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import (FunctionTransformer, OneHotEncoder,
+                                   PowerTransformer, StandardScaler)
+from tqdm import tqdm
 
 datasets_dict = {'azdias':'./arvato_data/Udacity_AZDIAS_052018.csv', 
                'customers':'./arvato_data/Udacity_CUSTOMERS_052018.csv',
@@ -29,8 +27,11 @@ def dump_pickle(variable, save_as, folder):
     return None
 
 def load_pickle(saved_as, folder):
-    '''loads variable from saved pickle file in folder
-    '''
+    """this function loads a saved variable as pickle file in a folder
+
+    Returns:
+        var: saved variable as a pickle file, e.g. pandas dataframe, variable or model
+    """    
     file_path = './' + folder + '/' + f'{saved_as}.pkl'
     with open(file_path, 'rb') as f:
         
@@ -38,7 +39,11 @@ def load_pickle(saved_as, folder):
     
     
 def load_dataset(dataset=None):
-    
+    """this function reads in a csv file with pre-defined conditions
+
+    Returns:
+        df: pandas dataframe
+    """    
     if not dataset:
         dataset = input('select a dataset (azdias, customers, train, test): ')
     
@@ -55,12 +60,25 @@ def load_dataset(dataset=None):
     return df
 
 def clean_RZ(df):
+    """cleaning function to rename values of column name: Attribute
+    by removing _RZ from the end
+
+    Args:
+        df (pandas.core.frame.DataFrame): pandas dataframe
+
+    Returns:
+        pandas.core.frame.DataFrame: cleaned dataframe
+    """    
     mask = df['Attribute'].str.endswith('_RZ')
     df.loc[mask,'Attribute'] = df.loc[mask,'Attribute'].str.replace('_RZ','')
     return df
 
 def create_ref_tables():
-    
+    """a function to generate reference tales from specific Excel files
+
+    Returns:
+        pandas.core.frame.DataFrame: three pandas dataframes as reference tables
+    """    
     attr = pd.read_excel('./arvato_data/DIAS Attributes - Values 2017.xlsx', 
                      skiprows=1, 
                      usecols='B:E',)\
@@ -110,6 +128,16 @@ attr_info, ref, attr_unknown = create_ref_tables()
 
 
 def map_nan(df, attr_unknown):
+    """this functin maps missing values based on input reference table (attr_unknown)
+
+    Args:
+        df (pandas.core.frame.DataFrame): dataframe to clean
+        attr_unknown (pandas.core.frame.DataFrame): reference table
+
+    Returns:
+        pandas.core.frame.DataFrame: clean dataframe with missing values 
+        mapped correctly as np.nan
+    """    
     # replace values representing unknowns to np.nan reference to attr_unknown table
     for attribute in attr_unknown.Attribute:
         if attribute in df.columns:
@@ -120,7 +148,17 @@ def map_nan(df, attr_unknown):
     return df
 
 def nan_hist_plots(df, df_name):
-    ''' docstring '''
+    """a function to visualizee missing values of input df by rows and columns
+    as a matplotlib histogram plot
+    
+    
+    Args:
+    df (pandas.core.frame.DataFrame): dataframe to visualize
+    df_name (string): name of input df
+
+    Returns:
+        None
+    """    
     
     print(f'{df_name} shape: ', df.shape)
     d0 = (df.isnull().sum(axis=0)/df.shape[0]).values
@@ -150,12 +188,16 @@ def nan_hist_plots(df, df_name):
     return None
     
 def nan_boxplot(df, df_name):
-    '''
-    This func generates a boxplot for a dataset's statistics of missing values
+    """This func generates a boxplot for a dataset's statistics of missing values
     by rows and columns
-    Input: dataset as Pandas dataframe
-    Output: boxplot
-    '''
+
+    Args:
+    df (pandas.core.frame.DataFrame): dataframe to visualize
+    df_name (string): name of input df
+    
+    Returns:
+        None
+    """    
     nan_rows_perc = df.isna().sum(axis=0)/df.shape[0]
     nan_cols_perc = df.isna().sum(axis=1)/df.shape[1]
 
@@ -175,18 +217,22 @@ def nan_boxplot(df, df_name):
     
     return None
 
-def upper_whisker(s):
-    '''
-    This func returns the upper whisker  as defined by matplotlib.pyplot.boxplot 
+def upper_whisker(ser):
+    """This func returns the upper whisker  as defined by matplotlib.pyplot.boxplot 
     documentation
-    Input: 
-        s: Series, list or Array-like
-    Output: Upper whisker
-    '''
+    
+    Args:
+    ser: pandas series or list or array like or any iterable
+
+    Returns:
+        upper_wskr(int): upper whisker of input s
+    """    
     iqr = np.quantile(s, .75) - np.quantile(s, .25)
     # The default value of whis = 1.5 corresponds to Tukey's original definition of boxplots.
     
-    return np.quantile(s, .75) + 1.3 * iqr
+    upper_wskr = np.quantile(s, .75) + 1.3 * iqr
+    
+    return upper_wskr
 
 def clean_nan(df, row_thresh, col_thresh):
     '''
@@ -209,7 +255,14 @@ def clean_nan(df, row_thresh, col_thresh):
     return df
 
 def fix_data(df):
-    
+    """this function renames specific column names of input dataframe
+
+    Args:
+        df (pandas.core.frame.DataFrame): input dataframe
+
+    Returns:
+        df (pandas.core.frame.DataFrame): output dataframe with renamed feature names
+    """    
     # rename df columns to match reference tables
     replace = {
         'CAMEO_INTL_2015': 'CAMEO_DEUINTL_2015',
@@ -227,7 +280,17 @@ def fix_data(df):
 
 
 def classify_features(df, plot=False):
+    """this function generates of dictionary of specific keys as pre-defined data types for 
+    input dataframe and generates a list of column / feature names based on a reference table (ref)
 
+    Args:
+        df (pandas.core.frame.DataFrame): input dataframe
+        plot (bool, optional): If true, it generates a bar plot to visualize the count of column types. 
+                                Defaults to False.
+
+    Returns:
+        feat_types_dict (dictionary): a dictionary of data-type:list of feature names for input df
+    """
     # categorical columns
     bin_cols = [c for c in ref.query('Type == "binary"')['Attribute'].unique() if c in df.columns]
     
@@ -271,7 +334,16 @@ def classify_features(df, plot=False):
 
 
 def feat_eng_data(df, feat_types_dict):
-    
+    """This function performs a pre-defined feature engineering for input dataframe such as
+    creating new features, dropping features, re-encoding.
+
+    Args:
+        df (pandas.core.frame.DataFrame): input df to feature engineer.
+        feat_types_dict (_type_): generated dictionary from @classify_features function
+
+    Returns:
+        df (pandas.core.frame.DataFrame): feature engineered df
+    """    
     to_drop = list(set(df.columns) - set(ref.Attribute.unique()))
     
     # feature engineer mixed features
@@ -324,7 +396,18 @@ def feat_eng_data(df, feat_types_dict):
     return df
 
 def clean_data(df, row_thresh, col_thresh, test=False):
-    
+    """this function combines other cleaning functions collectively to clean input
+    dataframe: df
+
+    Args:
+        df (pandas.core.frame.DataFrame): an input dataframe to clean
+        row_thresh (float): maximum allowable ratio of missing values per row (0-1)
+        col_thresh (float): maximum allowable ratio of missing values per column (0-1)
+        test (bool, optional): specify whether this is a test dataset or not. Defaults to False.
+
+    Returns:
+        df_clean (pandas.core.frame.DataFrame): fully cleaned df
+    """    
     print('data cleaning ...')
     df_clean = df.copy()
     if test:
@@ -341,9 +424,15 @@ def clean_data(df, row_thresh, col_thresh, test=False):
 
 
 def create_power_transformer(df):
-    '''
-    To fix the skeweness issue in numeric features_res
-    '''
+    """this function generates a list of skewed numeric columns and fitted PowerTransformer object
+    
+    Args:
+        df (pandas.core.frame.DataFrame): a dataframe to analysis its skeweness and to fit a PowerTransformer to
+
+    Returns:
+        skewed_cols (list): a list of skewed numeric columns
+        pt (sklearn.preprocessing._data.PowerTransformer): a fitted PowerTransformer object
+    """    
     feat_types_dict = classify_features(df)
     num_cols = feat_types_dict['num_cols']
     skewed_cols = (df[num_cols].abs().skew() > 1.5).where(lambda x:x==True).dropna().index.tolist()
@@ -354,7 +443,15 @@ def create_power_transformer(df):
 
 
 def create_column_transformer(df):
+    """this functions creates a column transformer object for input dataframe to transform its columns
+    as part of data pre processing
 
+    Args:
+        df (pandas.core.frame.DataFrame): a dataframe to perform column transformation by column type
+
+    Returns:
+        column_transformer (sklearn.compose._column_transformer.ColumnTransformer): a pre-defined column transformer
+    """
     feat_types_dict = classify_features(df)
 
     bin_pipeline = Pipeline([
@@ -392,7 +489,17 @@ def create_column_transformer(df):
 
 
 def transform_data(df, column_transformer, fit=False):
-    
+    """transform input dataframe using input column transformer
+
+    Args:
+        df (pandas.core.frame.DataFrame): _description_
+        column_transformer (_type_): _description_
+        fit (bool, optional): if true, fit_transform method is used. else transform.
+                            Defaults to False.
+
+    Returns:
+        df_trans (pandas.core.frame.DataFrame): _description_
+    """    
     print('column transformation ...')
     index = df.index
     feat_types_dict = classify_features(df)
@@ -420,7 +527,15 @@ def transform_data(df, column_transformer, fit=False):
 
 
 def match_features(df, pca_in_features):
+    """this function matches features of input dataframe to an input list
 
+    Args:
+        df (pandas.core.frame.DataFrame): _description_
+        pca_in_features (array like): a list of features for df which was fitted to PCA obj
+
+    Returns:
+        df (pandas.core.frame.DataFrame): _description_
+    """
     df_features, features_to_match = set(df.columns), set(pca_in_features)
     add_features, drop_features = list(features_to_match - df_features), list(df_features - features_to_match)
     df[add_features] = 0
@@ -429,7 +544,15 @@ def match_features(df, pca_in_features):
     return df
 
 def pca_prep_check(df, pca_in_features):
+    """this functions compares input dataframe features to an input list
 
+    Args:
+        df (pandas.core.frame.DataFrame): _description_
+        pca_in_features (array like): a list of features for df which was fitted to PCA obj
+
+    Returns:
+        None
+    """
     print('features not in pca_in_features:')
     print(list(set(df.columns) - set(pca_in_features)))
     print()
