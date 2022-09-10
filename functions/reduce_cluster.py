@@ -56,7 +56,17 @@ def scree_plot(pca, target):
     return n_components
 
 
-def do_pca(df):
+def do_pca(df:pd.DataFrame) -> pd.DataFrame:
+    """"
+    This func instantiate a PCA, finds n_components that explains pre-defined percentage of variance
+    amd fit_transform df to reduce its dimensionality
+
+    Args:
+        df (dataframe): input dataset
+
+    Returns:
+        dataframe: reduced dataset
+    """
     
     pca = PCA(n_components=None)
     pca.fit(df)
