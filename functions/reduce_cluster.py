@@ -78,6 +78,16 @@ def do_pca(df:pd.DataFrame) -> pd.DataFrame:
 
 
 def find_pca_components(pca, pca_in_features):
+    """finds a dataframe with pca components as columns and 
+    input features as index
+
+    Args:
+        pca: fitted PCA object
+        pca_in_features (list): list of dataframe features seen by pca during fit method
+
+    Returns:
+        dataframe: a dataframe with pca components as columns and input features as index
+    """
     
     pca_components = pd.DataFrame(
         np.round(pca.components_, 4), columns=pca_in_features,)
@@ -85,12 +95,17 @@ def find_pca_components(pca, pca_in_features):
     return pca_components
 
 
-def pca_results(df, pca):
-    '''
-    Create a DataFrame of the PCA results
-    Includes dimension feature weights and explained variance
+def pca_results(df: pd.DataFrame, pca) -> pd.DataFrame:
+    """Create a DataFrame of the PCA results Includes dimension feature weights and explained variance
     Visualizes the PCA results
-    '''
+
+    Args:
+        df (dataframe):
+        pca (PCA):
+
+    Returns:
+        dataframe: _description_
+    """
 
     # Dimension indexing
     dimensions = ['Dimension {}'.format(i) for i in range(1,len(pca.components_)+1)]
@@ -105,14 +120,25 @@ def pca_results(df, pca):
     variance_ratios.index = dimensions
 
     # Return a concatenated DataFrame
+    
     return pd.concat([variance_ratios, components], axis = 1)
 
-def pca_explained_var(df_clean, n_components):
+def pca_explained_var(df:pd.DataFrame, n_components:int):
+    """calculates explained variance for a given number of pca components
+
+    Args:
+        df (dataframe): input dataframe
+        n_components (int): number of n_components for PCA
+
+    Returns:
+        None
+    """
     pca = PCA(n_components=n_components)
-    df_pca = pca.fit_transform(df_clean)
-    comp_check = pca_results(df_clean, pca)
+    df_pca = pca.fit_transform(df)
+    comp_check = pca_results(df, pca)
     explained_var = comp_check['Explained Variance'].sum()
     print(f'for n_components={n_components}, the cumulative explained variance percentage = {explained_var*100:.2f}%')
+    
     return None
 
 
@@ -142,25 +168,27 @@ def pca_weights(pca_in_features, pca, component_no, show_plot=False):
         plt.grid()
         plt.show()
     print(pca_weights)
+    
     return pca_weights
 
 
-def get_kmeans_score(data, center):
-    '''
-    returns the kmeans score regarding SSE for points to centers
-    INPUT:
-        data - the dataset you want to fit kmeans to
-        center - the number of centers you want (the k value)
-    OUTPUT:
-        score - the SSE score for the kmeans model fit to the data
-    '''
+def get_kmeans_score(data: pd.DataFrame, center:int) -> list:
+    """returns the kmeans score regarding SSE for points to centers
+    
+    Args:
+        df (dataframe): the dataset you want to fit kmeans to
+        center (int): the number of centers you want (the k value)
+    
+    Returns:
+        score (list): the SSE score for the kmeans model fit to the data
+    """
     #instantiate kmeans
     kmeans = KMeans(n_clusters=center)
 
     # Then fit the model to your data using the fit method
-    model = kmeans.fit(data)
+    model = kmeans.fit(df)
 
     # Obtain a score related to the model fit
-    score = np.abs(model.score(data))
+    score = np.abs(model.score(df))
 
     return score
