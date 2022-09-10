@@ -467,7 +467,7 @@ def create_column_transformer(df):
         df (pd.DataFrame): a dataframe to perform column transformation by column type
 
     Returns:
-        column_transformer (sklearn.compose._column_transformer.ColumnTransformer): a pre-defined column transformer
+        column_transformer (sklearn ColumnTransformer): a pre-defined column transformer
     """
     feat_types_dict = classify_features(df)
 
