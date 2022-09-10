@@ -18,8 +18,16 @@ datasets_dict = {'azdias':'./arvato_data/Udacity_AZDIAS_052018.csv',
               }
 
 def dump_pickle(variable, save_as, folder):
-    '''saves variable as pickle file in folder
-    '''
+    """this func saves input variable as a pickle file in specified folder
+
+    Args:
+        variable (object): a variable to save as a pickle file
+        save_as (str): name of pickle file to save as
+        folder (str): name of the folder to save the pickle file in
+
+    Returns:
+        None
+    """
     file_path = './' + folder + '/' + f'{save_as}.pkl'
     with open(file_path, 'wb') as f:
         pickle.dump(variable, f)
@@ -29,8 +37,12 @@ def dump_pickle(variable, save_as, folder):
 def load_pickle(saved_as, folder):
     """this function loads a saved variable as pickle file in a folder
 
+    Args:
+        saved_as (str): name of pickle file to load
+        folder (str): name of the folder the pickle file was saved in
+
     Returns:
-        var: saved variable as a pickle file, e.g. pandas dataframe, variable or model
+        object: the saved variable object as a pickle file, e.g. dataframe, list, int, etc
     """    
     file_path = './' + folder + '/' + f'{saved_as}.pkl'
     with open(file_path, 'rb') as f:
@@ -38,11 +50,14 @@ def load_pickle(saved_as, folder):
         return pickle.load(f)
     
     
-def load_dataset(dataset=None):
+def load_dataset(dataset=None:str) -> pd.DataFrame:
     """this function reads in a csv file with pre-defined conditions
 
+    Args:
+        dataset (str): a choice of input from pre-defined choices, Default: None
+
     Returns:
-        df: pandas dataframe
+        df (dataframe): loaded dataset as a dataframe
     """    
     if not dataset:
         dataset = input('select a dataset (azdias, customers, train, test): ')
@@ -64,10 +79,10 @@ def clean_RZ(df):
     by removing _RZ from the end
 
     Args:
-        df (pandas.core.frame.DataFrame): pandas dataframe
+        df (pd.DataFrame): pandas dataframe
 
     Returns:
-        pandas.core.frame.DataFrame: cleaned dataframe
+        pd.DataFrame: cleaned dataframe
     """    
     mask = df['Attribute'].str.endswith('_RZ')
     df.loc[mask,'Attribute'] = df.loc[mask,'Attribute'].str.replace('_RZ','')
@@ -77,7 +92,7 @@ def create_ref_tables():
     """a function to generate reference tales from specific Excel files
 
     Returns:
-        pandas.core.frame.DataFrame: three pandas dataframes as reference tables
+        pd.DataFrame: three pandas dataframes as reference tables
     """    
     attr = pd.read_excel('./arvato_data/DIAS Attributes - Values 2017.xlsx', 
                      skiprows=1, 
@@ -131,11 +146,11 @@ def map_nan(df, attr_unknown):
     """this functin maps missing values based on input reference table (attr_unknown)
 
     Args:
-        df (pandas.core.frame.DataFrame): dataframe to clean
-        attr_unknown (pandas.core.frame.DataFrame): reference table
+        df (pd.DataFrame): dataframe to clean
+        attr_unknown (pd.DataFrame): reference table
 
     Returns:
-        pandas.core.frame.DataFrame: clean dataframe with missing values 
+        pd.DataFrame: clean dataframe with missing values 
         mapped correctly as np.nan
     """    
     # replace values representing unknowns to np.nan reference to attr_unknown table
@@ -153,8 +168,8 @@ def nan_hist_plots(df, df_name):
     
     
     Args:
-    df (pandas.core.frame.DataFrame): dataframe to visualize
-    df_name (string): name of input df
+    df (pd.DataFrame): dataframe to visualize
+    df_name (str): name of input df
 
     Returns:
         None
@@ -168,10 +183,10 @@ def nan_hist_plots(df, df_name):
     xaxes = ['Percentage of Missing values'] * 2
     yaxes = ['Count'] * 2
     titles = [
-        f'''\n{df_name} Dataset
-        Distrbution of Missing Values across Features\n''',
-        f'''\n{df_name} Dataset
-        Distrbution of Missing Values across Examples\n'''] 
+        f"""\n{df_name} Dataset
+        Distrbution of Missing Values across Features\n""",
+        f"""\n{df_name} Dataset
+        Distrbution of Missing Values across Examples\n"""] 
 
     fig, axes = plt.subplots(1,2, figsize=(16, 8))
     plt.setp(axes, xticks=list(np.arange(0.0, 1.1, 0.1)))
@@ -192,8 +207,8 @@ def nan_boxplot(df, df_name):
     by rows and columns
 
     Args:
-    df (pandas.core.frame.DataFrame): dataframe to visualize
-    df_name (string): name of input df
+    df (pd.DataFrame): dataframe to visualize
+    df_name (str): name of input df
     
     Returns:
         None
@@ -225,24 +240,26 @@ def upper_whisker(ser):
     ser: pandas series or list or array like or any iterable
 
     Returns:
-        upper_wskr(int): upper whisker of input s
+        (int): upper whisker of input s
     """    
     iqr = np.quantile(s, .75) - np.quantile(s, .25)
     # The default value of whis = 1.5 corresponds to Tukey's original definition of boxplots.
     
-    upper_wskr = np.quantile(s, .75) + 1.3 * iqr
+    return np.quantile(s, .75) + 1.3 * iqr
     
-    return upper_wskr
 
 def clean_nan(df, row_thresh, col_thresh):
-    '''
-    This func cleans columns with amount of missing values above upper whiskers 
+    """This func cleans columns with amount of missing values above upper whiskers 
     or a threshold (whichever is higher) as per Tukey's definition
-    Input: 
-        df: data as pandas dataframe
-        thresh: min perc of non-NAN values per columns
-    Output: clean df
-    '''
+    
+    Args: 
+        df (pd.DataFrame): data as pandas dataframe
+        row_thresh (float): max ratio of missing values per row
+        col_thresh (float): max ratio of missing values per column
+
+    Returns: 
+        pd.DataFrame: a clean dataframe after removing outlier missing values
+    """
     
     nans_per_row_perc = df.isna().sum(axis=1)/df.shape[1]
     rows_to_retain = nans_per_row_perc <= max(row_thresh, upper_whisker(nans_per_row_perc))    
@@ -258,10 +275,10 @@ def fix_data(df):
     """this function renames specific column names of input dataframe
 
     Args:
-        df (pandas.core.frame.DataFrame): input dataframe
+        df (pd.DataFrame): input dataframe
 
     Returns:
-        df (pandas.core.frame.DataFrame): output dataframe with renamed feature names
+        df (pd.DataFrame): output dataframe with renamed feature names
     """    
     # rename df columns to match reference tables
     replace = {
@@ -284,7 +301,7 @@ def classify_features(df, plot=False):
     input dataframe and generates a list of column / feature names based on a reference table (ref)
 
     Args:
-        df (pandas.core.frame.DataFrame): input dataframe
+        df (pd.DataFrame): input dataframe
         plot (bool, optional): If true, it generates a bar plot to visualize the count of column types. 
                                 Defaults to False.
 
@@ -338,11 +355,11 @@ def feat_eng_data(df, feat_types_dict):
     creating new features, dropping features, re-encoding.
 
     Args:
-        df (pandas.core.frame.DataFrame): input df to feature engineer.
+        df (pd.DataFrame): input df to feature engineer.
         feat_types_dict (_type_): generated dictionary from @classify_features function
 
     Returns:
-        df (pandas.core.frame.DataFrame): feature engineered df
+        df (pd.DataFrame): feature engineered df
     """    
     to_drop = list(set(df.columns) - set(ref.Attribute.unique()))
     
@@ -400,13 +417,13 @@ def clean_data(df, row_thresh, col_thresh, test=False):
     dataframe: df
 
     Args:
-        df (pandas.core.frame.DataFrame): an input dataframe to clean
+        df (pd.DataFrame): an input dataframe to clean
         row_thresh (float): maximum allowable ratio of missing values per row (0-1)
         col_thresh (float): maximum allowable ratio of missing values per column (0-1)
         test (bool, optional): specify whether this is a test dataset or not. Defaults to False.
 
     Returns:
-        df_clean (pandas.core.frame.DataFrame): fully cleaned df
+        df_clean (pd.DataFrame): fully cleaned df
     """    
     print('data cleaning ...')
     df_clean = df.copy()
@@ -427,7 +444,7 @@ def create_power_transformer(df):
     """this function generates a list of skewed numeric columns and fitted PowerTransformer object
     
     Args:
-        df (pandas.core.frame.DataFrame): a dataframe to analysis its skeweness and to fit a PowerTransformer to
+        df (pd.DataFrame): a dataframe to analysis its skeweness and to fit a PowerTransformer to
 
     Returns:
         skewed_cols (list): a list of skewed numeric columns
@@ -447,7 +464,7 @@ def create_column_transformer(df):
     as part of data pre processing
 
     Args:
-        df (pandas.core.frame.DataFrame): a dataframe to perform column transformation by column type
+        df (pd.DataFrame): a dataframe to perform column transformation by column type
 
     Returns:
         column_transformer (sklearn.compose._column_transformer.ColumnTransformer): a pre-defined column transformer
@@ -492,13 +509,13 @@ def transform_data(df, column_transformer, fit=False):
     """transform input dataframe using input column transformer
 
     Args:
-        df (pandas.core.frame.DataFrame): _description_
+        df (pd.DataFrame): _description_
         column_transformer (_type_): _description_
         fit (bool, optional): if true, fit_transform method is used. else transform.
                             Defaults to False.
 
     Returns:
-        df_trans (pandas.core.frame.DataFrame): _description_
+        df_trans (pd.DataFrame): _description_
     """    
     print('column transformation ...')
     index = df.index
@@ -530,11 +547,11 @@ def match_features(df, pca_in_features):
     """this function matches features of input dataframe to an input list
 
     Args:
-        df (pandas.core.frame.DataFrame): _description_
+        df (pd.DataFrame): _description_
         pca_in_features (array like): a list of features for df which was fitted to PCA obj
 
     Returns:
-        df (pandas.core.frame.DataFrame): _description_
+        df (pd.DataFrame): _description_
     """
     df_features, features_to_match = set(df.columns), set(pca_in_features)
     add_features, drop_features = list(features_to_match - df_features), list(df_features - features_to_match)
@@ -547,7 +564,7 @@ def pca_prep_check(df, pca_in_features):
     """this functions compares input dataframe features to an input list
 
     Args:
-        df (pandas.core.frame.DataFrame): _description_
+        df (pd.DataFrame): _description_
         pca_in_features (array like): a list of features for df which was fitted to PCA obj
 
     Returns:
