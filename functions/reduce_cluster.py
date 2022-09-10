@@ -117,6 +117,17 @@ def pca_explained_var(df_clean, n_components):
 
 
 def pca_weights(pca_in_features, pca, component_no, show_plot=False):
+    """"This func finds top features with highest positive or negative weights
+
+    Args:
+        pca_in_features (list): list of features used to fit PCA
+        pca (sklean PCA): fitted pca object
+        component_no (int): component number of PCA
+        show_plot (boolen): whether to plot the result or not. Defaults to False
+
+    Returns:
+        pca_weights (dataframe): a dataframe showing top features with highest positive or negative weights
+    """
     
     pca_weights = pd.DataFrame(np.round(pca.components_, 4), columns=pca_in_features).iloc[component_no].sort_values(ascending=False)
     pca_weights = pd.concat([pca_weights.head(5), pca_weights.tail(5)])
