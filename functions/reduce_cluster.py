@@ -19,14 +19,14 @@ from functions.clean_transform import (
 
 
 def scree_plot(pca, target):
-    '''
+    """
     Creates a scree plot associated with the principal components 
     
     INPUT: pca - the result of instantian of PCA in scikit learn
             
     OUTPUT:
             None
-    '''
+    """
     num_components = len(pca.explained_variance_ratio_)
     ind = np.arange(0,num_components)
     vals = pca.explained_variance_ratio_*100
@@ -57,7 +57,7 @@ def scree_plot(pca, target):
 
 
 def do_pca(df:pd.DataFrame) -> pd.DataFrame:
-    """"
+    """
     This func instantiate a PCA, finds n_components that explains pre-defined percentage of variance
     amd fit_transform df to reduce its dimensionality
 
@@ -143,7 +143,7 @@ def pca_explained_var(df:pd.DataFrame, n_components:int):
 
 
 def pca_weights(pca_in_features, pca, component_no, show_plot=False):
-    """"This func finds top features with highest positive or negative weights
+    """This func finds top features with highest positive or negative weights
 
     Args:
         pca_in_features (list): list of features used to fit PCA
