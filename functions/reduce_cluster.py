@@ -56,7 +56,7 @@ def scree_plot(pca, target):
     return n_components
 
 
-def do_pca(df:pd.DataFrame) -> pd.DataFrame:
+def do_pca(df:pd.DataFrame, exp_var=95) -> pd.DataFrame:
     """
     This func instantiate a PCA, finds n_components that explains pre-defined percentage of variance
     amd fit_transform df to reduce its dimensionality
@@ -70,7 +70,7 @@ def do_pca(df:pd.DataFrame) -> pd.DataFrame:
     
     pca = PCA(n_components=None)
     pca.fit(df)
-    n_components = scree_plot(pca, 95)
+    n_components = scree_plot(pca, exp_var)
     pca = PCA(n_components=n_components)
     df_pca = pca.fit_transform(df)
 
@@ -78,8 +78,7 @@ def do_pca(df:pd.DataFrame) -> pd.DataFrame:
 
 
 def find_pca_components(pca, pca_in_features):
-    """finds a dataframe with pca components as columns and 
-    input features as index
+    """finds a dataframe with pca components as index and input features as columns
 
     Args:
         pca: fitted PCA object
