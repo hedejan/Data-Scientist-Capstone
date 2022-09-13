@@ -48,12 +48,12 @@ def load_pickle(saved_as, folder):
         object: the saved variable object as a pickle file, e.g. dataframe, list, int, etc
     """
     file_path = './' + folder + '/' + f'{saved_as}.pkl'
-    with open(file_path, 'rb') as f:
+    with open(file_path, 'rb') as file:
 
-        return pickle.load(f)
+        return pickle.load(file)
 
 
-def load_dataset(dataset9=None) -> pd.DataFrame:
+def load_dataset(dataset=None) -> pd.DataFrame:
     """this function reads in a csv file with pre-defined conditions
 
     Args:
@@ -66,7 +66,7 @@ def load_dataset(dataset9=None) -> pd.DataFrame:
         dataset = input('select a dataset (azdias, customers, train, test): ')
 
     file_path = datasets_dict[dataset]
-    df = pd.read_csv(file_path, sep=';', parse_dates=['EINGEFUEGT_AM', ], index_col='LNR',
+    data = pd.read_csv(file_path, sep=';', parse_dates=['EINGEFUEGT_AM', ], index_col='LNR',
                      converters={
                          'GEBURTSJAHR': lambda x: x if x != '0' else np.nan},
                      na_values={
@@ -74,9 +74,9 @@ def load_dataset(dataset9=None) -> pd.DataFrame:
         'CAMEO_DEU_2015': 'XX',
         'CAMEO_INTL_2015': 'XX', },
     )
-    print(f'{dataset} shape: {df.shape}')
+    print(f'{dataset} shape: {data.shape}')
 
-    return df
+    return data
 
 
 def clean_RZ(df):
@@ -147,10 +147,10 @@ def create_ref_tables():
     return attr_info, ref, attr_unknown
 
 
-attr_info, ref, attr_unknown = create_ref_tables()
+# attr_info, ref, attr_unknown = create_ref_tables()
 
 
-def map_nan(df, attr_unknown):
+def map_nan(df):
     """this functin maps missing values based on input reference table (attr_unknown)
 
     Args:
@@ -161,6 +161,8 @@ def map_nan(df, attr_unknown):
         pd.DataFrame: clean dataframe with missing values 
         mapped correctly as np.nan
     """
+    
+    _, _, attr_unknown = create_ref_tables()
     # replace values representing unknowns to np.nan reference to attr_unknown table
     for attribute in attr_unknown.Attribute:
         if attribute in df.columns:
@@ -199,7 +201,7 @@ def nan_hist_plots(df, df_name):
         f"""\n{df_name} Dataset
         Distrbution of Missing Values across Examples\n"""]
 
-    fig, axes = plt.subplots(1, 2, figsize=(16, 8))
+    _, axes = plt.subplots(1, 2, figsize=(16, 8))
     plt.setp(axes, xticks=list(np.arange(0.0, 1.1, 0.1)))
     axes = axes.ravel()
     for idx, ax in enumerate(axes):
@@ -245,7 +247,7 @@ def nan_boxplot(df, df_name):
     return None
 
 
-def upper_whisker(ser):
+def upper_whisker(arr):
     """This func returns the upper whisker  as defined by matplotlib.pyplot.boxplot 
     documentation
 
@@ -255,10 +257,10 @@ def upper_whisker(ser):
     Returns:
         (int): upper whisker of input s
     """
-    iqr = np.quantile(s, .75) - np.quantile(s, .25)
+    iqr = np.quantile(arr, .75) - np.quantile(arr, .25)
     # The default value of whis = 1.5 corresponds to Tukey's original definition of boxplots.
 
-    return np.quantile(s, .75) + 1.3 * iqr
+    return np.quantile(arr, .75) + 1.3 * iqr
 
 
 def clean_nan(df, row_thresh, col_thresh):
@@ -324,6 +326,7 @@ def classify_features(df, plot=False):
     Returns:
         feat_types_dict (dictionary): a dictionary of data-type:list of feature names for input df
     """
+    _, ref, _ = create_ref_tables()
     # categorical columns
     bin_cols = [c for c in ref.query('Type == "binary"')[
         'Attribute'].unique() if c in df.columns]
@@ -364,11 +367,11 @@ def classify_features(df, plot=False):
     if plot:
         to_plot = pd.Series(
             {k: len(feat_types_dict[k]) for k in feat_types_dict})
-        fig, ax = plt.subplots(figsize=(12, 5))
+        _, ax = plt.subplots(figsize=(12, 5))
         ax.bar(x=to_plot.index, height=to_plot.values)
-        for p in ax.patches:
-            ax.annotate(str(p.get_height()), (p.get_x() *
-                        1.005+.35, p.get_height() * 1.005))
+        for patch in ax.patches:
+            ax.annotate(str(patch.get_height()), (patch.get_x() *
+                        1.005+.35, patch.get_height() * 1.005))
         plt.show()
 
     return feat_types_dict
@@ -385,6 +388,7 @@ def feat_eng_data(df, feat_types_dict):
     Returns:
         df (pd.DataFrame): feature engineered df
     """
+    _, ref, _ = create_ref_tables()
     to_drop = list(set(df.columns) - set(ref.Attribute.unique()))
     with contextlib.suppress(Exception):
         df['DECADE'] = df['PRAEGENDE_JUGENDJAHRE'].replace(
@@ -439,7 +443,7 @@ def clean_data(df, row_thresh, col_thresh, test=False):
         df = df.drop_duplicates()
     df_clean = df_clean.sample(frac=1)  # randomize
     attr_info, ref, attr_unknown = create_ref_tables()
-    df_clean = map_nan(df_clean, attr_unknown)
+    df_clean = map_nan(df_clean, )
     df_clean = clean_nan(df_clean, row_thresh, col_thresh)
     df_clean = fix_data(df_clean)
     feat_types_dict = classify_features(df_clean)
@@ -462,10 +466,10 @@ def create_power_transformer(df):
     num_cols = feat_types_dict['num_cols']
     skewed_cols = (df[num_cols].abs().skew() > 1.5).where(
         lambda x: x == True).dropna().index.tolist()
-    pt = PowerTransformer()
-    pt.fit(df[skewed_cols])
+    power_transformer = PowerTransformer()
+    power_transformer.fit(df[skewed_cols])
 
-    return skewed_cols, pt
+    return skewed_cols, power_transformer
 
 
 def create_column_transformer(df):
